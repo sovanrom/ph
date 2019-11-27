@@ -14,13 +14,16 @@
     <link rel="stylesheet" href="<?php echo base_url(); ?>assets/apps/plugins/datetimepicker/datetimepicker.css">
     <link rel="stylesheet" href="<?php echo base_url(); ?>assets/apps/plugins/select2/select2.min.css">
     <link rel="stylesheet" href="<?php echo base_url(); ?>assets/apps/plugins/wysihtml5/bootstrap3-wysihtml5.min.css">
+    <link rel="stylesheet" href="<?php echo base_url(); ?>assets/apps/plugins/MDB-Free">
     <link rel="stylesheet" href="<?php echo base_url(); ?>assets/apps/plugins/datatables.net-bs/dataTables.bootstrap.min.css">
     <link rel="stylesheet" href="<?php echo base_url(); ?>assets/apps/css/AdminLTE.min.css">
     <link rel="stylesheet" href="<?php echo base_url(); ?>assets/apps/css/skins/_all-skins.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <script type="text/javascript">
         var base_url = "<?php echo base_url(); ?>";
     </script>
+    <script type="text/javascript" src="<?php echo base_url(); ?>assets\apps\plugins\jquery\jquery.js"></script>
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
     <div class="wrapper">
