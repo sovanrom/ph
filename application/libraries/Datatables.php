@@ -1,7 +1,24 @@
 <?php if(!defined('BASEPATH')) exit('No direct script access allowed');
-  
+  /**
+  * Ignited Datatables
+  *
+  * This is a wrapper class/library based on the native Datatables server-side implementation by Allan Jardine
+  * found at http://datatables.net/examples/data_sources/server_side.html for CodeIgniter
+  *
+  * @package    CodeIgniter
+  * @subpackage libraries
+  * @category   library
+  * @version    2.0 <beta>
+  * @author     Vincent Bambico <metal.conspiracy@gmail.com>
+  *             Yusuf Ozdemir <yusuf@ozdemir.be>
+  * @link       http://ellislab.com/forums/viewthread/160896/
+  */
   class Datatables
   {
+    /**
+    * Global container variables for chained argument results
+    *
+    */
     private $ci;
     private $table;
     private $distinct;
@@ -18,18 +35,36 @@
     private $add_columns    = array();
     private $edit_columns   = array();
     private $unset_columns  = array();
+    private $post_columns  = array();
 
-    public function __construct()
-    {
-      $this->ci =& get_instance();
+    /**
+    * Copies an instance of CI
+    */
+    public function __construct() {
+      $this->post_columns = $this->input->post('columns');
     }
 
+    public function __get($var) {
+        return get_instance()->$var;
+    }
+
+    /**
+    * If you establish multiple databases in config/database.php this will allow you to
+    * set the database (other than $active_group) - more info: http://ellislab.com/forums/viewthread/145901/#712942
+    */
     public function set_database($db_name)
     {
-      $db_data = $this->ci->load->database($db_name, TRUE);
-      $this->ci->db = $db_data;
+      $db_data = $this->load->database($db_name, TRUE);
+      $this->db = $db_data;
     }
 
+    /**
+    * Generates the SELECT portion of the query
+    *
+    * @param string $columns
+    * @param bool $backtick_protect
+    * @return mixed
+    */
     public function select($columns, $backtick_protect = TRUE)
     {
       foreach($this->explode(',', $columns) as $val)
@@ -40,91 +75,186 @@
         $this->select[$column] =  trim(preg_replace('/(.*)\s+as\s+(\w*)/i', '$1', $val));
       }
 
-      $this->ci->db->select($columns, $backtick_protect);
+      $this->db->select($columns, $backtick_protect);
       return $this;
     }
 
-    
+    /**
+    * Generates the DISTINCT portion of the query
+    *
+    * @param string $column
+    * @return mixed
+    */
     public function distinct($column)
     {
       $this->distinct = $column;
-      $this->ci->db->distinct($column);
+      $this->db->distinct($column);
       return $this;
     }
 
+    /**
+    * Generates a custom GROUP BY portion of the query
+    *
+    * @param string $val
+    * @return mixed
+    */
     public function group_by($val)
     {
       $this->group_by[] = $val;
-      $this->ci->db->group_by($val);
+      $this->db->group_by($val);
       return $this;
     }
 
+    /**
+    * Generates the FROM portion of the query
+    *
+    * @param string $table
+    * @return mixed
+    */
     public function from($table)
     {
       $this->table = $table;
       return $this;
     }
 
+    /**
+    * Generates the JOIN portion of the query
+    *
+    * @param string $table
+    * @param string $fk
+    * @param string $type
+    * @return mixed
+    */
     public function join($table, $fk, $type = NULL)
     {
       $this->joins[] = array($table, $fk, $type);
-      $this->ci->db->join($table, $fk, $type);
+      $this->db->join($table, $fk, $type);
       return $this;
     }
 
+    /**
+    * Generates the WHERE portion of the query
+    *
+    * @param mixed $key_condition
+    * @param string $val
+    * @param bool $backtick_protect
+    * @return mixed
+    */
     public function where($key_condition, $val = NULL, $backtick_protect = TRUE)
     {
       $this->where[] = array($key_condition, $val, $backtick_protect);
-      $this->ci->db->where($key_condition, $val, $backtick_protect);
+      $this->db->where($key_condition, $val, $backtick_protect);
       return $this;
     }
 
+    /**
+    * Generates the WHERE portion of the query
+    *
+    * @param mixed $key_condition
+    * @param string $val
+    * @param bool $backtick_protect
+    * @return mixed
+    */
     public function or_where($key_condition, $val = NULL, $backtick_protect = TRUE)
     {
       $this->or_where[] = array($key_condition, $val, $backtick_protect);
-      $this->ci->db->or_where($key_condition, $val, $backtick_protect);
-      return $this;
-    }
-    
-    public function where_in($key_condition, $val = NULL)
-    {
-      $this->where_in[] = array($key_condition, $val);
-      $this->ci->db->where_in($key_condition, $val);
+      $this->db->or_where($key_condition, $val, $backtick_protect);
       return $this;
     }
 
+    /**
+    * Generates the WHERE IN portion of the query
+    *
+    * @param mixed $key_condition
+    * @param string $val
+    * @param bool $backtick_protect
+    * @return mixed
+    */
+    public function where_in($key_condition, $val = NULL)
+    {
+      $this->where_in[] = array($key_condition, $val);
+      $this->db->where_in($key_condition, $val);
+      return $this;
+    }
+
+    /**
+    * Generates the WHERE portion of the query
+    *
+    * @param mixed $key_condition
+    * @param string $val
+    * @param bool $backtick_protect
+    * @return mixed
+    */
     public function filter($key_condition, $val = NULL, $backtick_protect = TRUE)
     {
       $this->filter[] = array($key_condition, $val, $backtick_protect);
       return $this;
     }
 
+    /**
+    * Generates a %LIKE% portion of the query
+    *
+    * @param mixed $key_condition
+    * @param string $val
+    * @param bool $backtick_protect
+    * @return mixed
+    */
     public function like($key_condition, $val = NULL, $side = 'both')
     {
       $this->like[] = array($key_condition, $val, $side);
-      $this->ci->db->like($key_condition, $val, $side);
+      $this->db->like($key_condition, $val, $side);
       return $this;
     }
 
+    /**
+    * Generates the OR %LIKE% portion of the query
+    *
+    * @param mixed $key_condition
+    * @param string $val
+    * @param bool $backtick_protect
+    * @return mixed
+    */
     public function or_like($key_condition, $val = NULL, $side = 'both')
     {
       $this->or_like[] = array($key_condition, $val, $side);
-      $this->ci->db->or_like($key_condition, $val, $side);
+      $this->db->or_like($key_condition, $val, $side);
       return $this;
     }
 
+    /**
+    * Sets additional column variables for adding custom columns
+    *
+    * @param string $column
+    * @param string $content
+    * @param string $match_replacement
+    * @return mixed
+    */
     public function add_column($column, $content, $match_replacement = NULL)
     {
       $this->add_columns[$column] = array('content' => $content, 'replacement' => $this->explode(',', $match_replacement));
       return $this;
     }
 
+    /**
+    * Sets additional column variables for editing columns
+    *
+    * @param string $column
+    * @param string $content
+    * @param string $match_replacement
+    * @return mixed
+    */
     public function edit_column($column, $content, $match_replacement)
     {
       $this->edit_columns[$column][] = array('content' => $content, 'replacement' => $this->explode(',', $match_replacement));
       return $this;
     }
 
+    /**
+    * Unset column
+    *
+    * @param string $column
+    * @return mixed
+    */
     public function unset_column($column)
     {
       $column=explode(',',$column);
@@ -132,6 +262,13 @@
       return $this;
     }
 
+    /**
+    * Builds all the necessary query segments and performs the main query based on results set from chained statements
+    *
+    * @param string $output
+    * @param string $charset
+    * @return string
+    */
     public function generate($output = 'json', $charset = 'UTF-8')
     {
       if(strtolower($output) == 'json')
@@ -142,65 +279,98 @@
       return $this->produce_output(strtolower($output), strtolower($charset));
     }
 
+    /**
+    * Generates the LIMIT portion of the query
+    *
+    * @return mixed
+    */
     private function get_paging()
     {
-      $iStart = $this->ci->input->post('start');
-      $iLength = $this->ci->input->post('length');
+      $iStart = $this->input->post('start');
+      $iLength = $this->input->post('length');
 
       if($iLength != '' && $iLength != '-1')
-        $this->ci->db->limit($iLength, ($iStart)? $iStart : 0);
+        $this->db->limit($iLength, ($iStart) ? $iStart : 0);
     }
 
+    /**
+    * Generates the ORDER BY portion of the query
+    *
+    * @return mixed
+    */
     private function get_ordering()
     {
 
-      $Data = $this->ci->input->post('columns');
-
-
-      if ($this->ci->input->post('order'))
-        foreach ($this->ci->input->post('order') as $key)
+      if ($this->input->post('order'))
+        foreach ($this->input->post('order') as $key)
           if($this->check_cType())
-            $this->ci->db->order_by($Data[$key['column']]['data'], $key['dir']);
+            $this->db->order_by($this->post_columns[$key['column']]['data'], $key['dir']);
           else
-            $this->ci->db->order_by($this->columns[$key['column']] , $key['dir']);
+            $this->db->order_by($this->columns[$key['column']] , $key['dir']);
 
     }
 
+    /**
+    * Generates a %LIKE% portion of the query
+    *
+    * @return mixed
+    */
     private function get_filtering()
     {
 
-      $mColArray = $this->ci->input->post('columns');
-
       $sWhere = '';
-      $search = $this->ci->input->post('search');
-      $sSearch = $this->ci->db->escape_like_str(trim($search['value']));
+      $search = $this->input->post('search');
+      $sSearch = $this->db->escape_like_str(trim($search['value']));
       $columns = array_values(array_diff($this->columns, $this->unset_columns));
+      $dt_pcs = count($this->post_columns);
+
 
       if($sSearch != '')
-        for($i = 0; $i < count($mColArray); $i++)
-          if ($mColArray[$i]['searchable'] == 'true' && !array_key_exists($mColArray[$i]['data'], $this->add_columns))
+        for($i = 0; $i < $dt_pcs; $i++)
+          if ($this->post_columns[$i]['searchable'] == 'true' && !array_key_exists($this->post_columns[$i]['data'], $this->add_columns))
             if($this->check_cType())
-              $sWhere .= $this->select[$mColArray[$i]['data']] . " LIKE '%" . $sSearch . "%' OR ";
+              $sWhere .= $this->select[$this->post_columns[$i]['data']] . " LIKE '%" . $sSearch . "%' OR ";
             else
               $sWhere .= $this->select[$this->columns[$i]] . " LIKE '%" . $sSearch . "%' OR ";
 
+      for($i = 0; $i < $dt_pcs; $i++) {
+        if (($this->post_columns[$i]['search']['value'] === '0' || $this->post_columns[$i]['search']['value'] === 0 || !empty($this->post_columns[$i]['search']['value'])) && $this->post_columns[$i]['searchable'] == 'true' &&
+          !array_key_exists($this->post_columns[$i]['data'], $this->add_columns)) {
+        // if (!empty($this->post_columns[$i]['search']['value']) && $this->post_columns[$i]['searchable'] == 'true' &&
+        //   !array_key_exists($this->post_columns[$i]['data'], $this->add_columns)) {
+            if($this->check_cType())
+              $sWhere .= $this->select[$this->post_columns[$i]['data']] . " LIKE '%" . $this->post_columns[$i]['search']['value'] . "%' OR ";
+            else
+              $sWhere .= $this->select[$this->columns[$i]] . " LIKE '%" . $this->post_columns[$i]['search']['value'] . "%' OR ";
+        }
+      }
 
       $sWhere = substr_replace($sWhere, '', -3);
 
       if($sWhere != '')
-        $this->ci->db->where('(' . $sWhere . ')');
-
-      // TODO : sRangeSeparator
+        $this->db->where('(' . $sWhere . ')', null);
 
       foreach($this->filter as $val)
-        $this->ci->db->where($val[0], $val[1], $val[2]);
+        $this->db->where($val[0], $val[1], $val[2]);
     }
 
+    /**
+    * Compiles the select statement based on the other functions called and runs the query
+    *
+    * @return mixed
+    */
     private function get_display_result()
     {
-      return $this->ci->db->get($this->table);
+      return $this->db->get($this->table);
     }
 
+    /**
+    * Builds an encoded string data. Returns JSON by default, and an array of aaData if output is set to raw.
+    *
+    * @param string $output
+    * @param string $charset
+    * @return mixed
+    */
     private function produce_output($output, $charset)
     {
       $aaData = array();
@@ -238,7 +408,7 @@
       {
         $sOutput = array
         (
-          'draw'                => intval($this->ci->input->post('draw')),
+          'draw'                => intval($this->input->post('draw')),
           'recordsTotal'        => $iTotal,
           'recordsFiltered'     => $iFilteredTotal,
           'data'                => $aaData
@@ -264,43 +434,47 @@
         $this->get_filtering();
 
       foreach($this->joins as $val)
-        $this->ci->db->join($val[0], $val[1], $val[2]);
+        $this->db->join($val[0], $val[1], $val[2]);
 
       foreach($this->where as $val)
-        $this->ci->db->where($val[0], $val[1], $val[2]);
+        $this->db->where($val[0], $val[1], $val[2]);
 
       foreach($this->or_where as $val)
-        $this->ci->db->or_where($val[0], $val[1], $val[2]);
-        
+        $this->db->or_where($val[0], $val[1], $val[2]);
+
       foreach($this->where_in as $val)
-        $this->ci->db->where_in($val[0], $val[1]);
+        $this->db->where_in($val[0], $val[1]);
 
       foreach($this->group_by as $val)
-        $this->ci->db->group_by($val);
+        $this->db->group_by($val);
 
       foreach($this->like as $val)
-        $this->ci->db->like($val[0], $val[1], $val[2]);
+        $this->db->like($val[0], $val[1], $val[2]);
 
       foreach($this->or_like as $val)
-        $this->ci->db->or_like($val[0], $val[1], $val[2]);
+        $this->db->or_like($val[0], $val[1], $val[2]);
 
       if(strlen($this->distinct) > 0)
       {
-        $this->ci->db->distinct($this->distinct);
-        $this->ci->db->select($this->columns);
+        $this->db->distinct($this->distinct);
+        $this->db->select($this->columns);
       }
-      $subquery = $this->ci->db->get_compiled_select($this->table);
-      $countingsql = "SELECT COUNT(*) FROM (" . $subquery . ") SqueryAux";
-      $query = $this->ci->db->query($countingsql);
-      $result = $query->row_array();
-      $count = $result['COUNT(*)'];
-      return $count;
+
+      $query = $this->db->get($this->table, NULL, NULL, FALSE);
+      return $query->num_rows();
     }
 
+    /**
+    * Runs callback functions and makes replacements
+    *
+    * @param mixed $custom_val
+    * @param mixed $row_data
+    * @return string $custom_val['content']
+    */
     private function exec_replace($custom_val, $row_data)
     {
       $replace_string = '';
-      
+
       // Go through our array backwards, else $1 (foo) will replace $11, $12 etc with foo1, foo2 etc
       $custom_val['replacement'] = array_reverse($custom_val['replacement'], true);
 
@@ -337,15 +511,25 @@
       return $custom_val['content'];
     }
 
+    /**
+    * Check column type -numeric or column name
+    *
+    * @return bool
+    */
     private function check_cType()
     {
-      $column = $this->ci->input->post('columns');
-      if(is_numeric($column[0]['data']))
-        return FALSE;
-      else
-        return TRUE;
+      return (bool) ( ! is_numeric($this->post_columns[0]['data']));
     }
 
+
+    /**
+    * Return the difference of open and close characters
+    *
+    * @param string $str
+    * @param string $open
+    * @param string $close
+    * @return string $retval
+    */
     private function balanceChars($str, $open, $close)
     {
       $openCount = substr_count($str, $open);
@@ -354,6 +538,15 @@
       return $retval;
     }
 
+    /**
+    * Explode, but ignore delimiter until closing characters are found
+    *
+    * @param string $delimiter
+    * @param string $str
+    * @param string $open
+    * @param string $close
+    * @return mixed $retval
+    */
     private function explode($delimiter, $str, $open = '(', $close=')')
     {
       $retval = array();
@@ -380,6 +573,12 @@
       return $retval;
     }
 
+    /**
+    * Workaround for json_encode's UTF-8 encoding if a different charset needs to be used
+    *
+    * @param mixed $result
+    * @return string
+    */
     private function jsonify($result = FALSE)
     {
       if(is_null($result))
@@ -433,9 +632,15 @@
         return '{' . join(',', $json) . '}';
       }
     }
-	
+
+   /**
+     * returns the sql statement of the last query run
+     * @return type
+     */
     public function last_query()
     {
-      return  $this->ci->db->last_query();
+      return  $this->db->last_query();
     }
+
+
   }
