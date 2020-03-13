@@ -35,7 +35,19 @@
  * @since	Version 1.0.0
  * @filesource
  */
-
+/*
+ * --------------------------------------------------------------------
+ * SET YOUR TIMEZONE
+ * --------------------------------------------------------------------
+ *
+ * Find your timezone here
+ * http://php.net/manual/en/timezones.php
+ */
+$timezone = 'Asia/Phnom_Penh';
+if (function_exists('date_default_timezone_set')) {
+    date_default_timezone_set($timezone);
+}
+define('TIMEZONE', $timezone);
 /*
  *---------------------------------------------------------------
  * APPLICATION ENVIRONMENT

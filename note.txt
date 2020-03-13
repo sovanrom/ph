@@ -1,0 +1,105 @@
+php -S localhost:3000
+
+https://inneka.com/programming/bootstrap/select2-doesnt-work-when-embedded-in-a-bootstrap-modal/
+
+https://gist.github.com/chillybin/5b1d3f5eff0dfbab6c58ca009a0092dc
+
+function initiateSelect2() {
+  $('.select2').select2();
+}
+initiateSelect2();
+// when modal is open
+$('.modal').on('shown.bs.modal', function () {
+  initiateSelect2();
+})
+
+<div id="myModal" class="modal hide fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Panel</h3>
+  </div>
+
+  <div class="modal-body" style="max-height: 800px">
+
+https://github.com/kktsvetkov/krumo/issues/6
+
+<i class="entypo-pencil"></i>
+
+https://stackoverflow.com/questions/25757968/bootstrap-modal-is-not-a-function
+
+https://stackoverflow.com/questions/8982295/confirm-deletion-in-modal-dialog-using-twitter-bootstrap
+
+44vrt5
+
+Quick jQuery snippet to clone a table row (and make empty) appended to a table.
+
+var clonedRow = $('tbody tr:first').clone();
+clonedRow.find('input').val('');
+$(this).prev().find($('table tbody')).append(clonedRow);
+
+https://fullcalendar.io/docs/v3/events-function
+
+https://techarise.com/integrate-fullcalendar-with-codeigniter/
+
+https://www.patchesoft.com/fullcalendar-with-php-and-codeigniter
+
+https://www.patchesoft.com/fullcalendar-with-php-and-codeigniter/
+
+https://www.webslesson.info/2017/12/jquery-fullcalandar-integration-with-php-and-mysql.html
+
+
+$('#notice_calendar').fullCalendar({
+
+	header: {
+		left: 'title',
+		right: 'today prev,next'
+	},
+
+	editable: false,
+	firstDay: 1,
+	height: 480,
+
+	//events: base_url + 'admin/dashboard/get_unpaid',
+
+	events: function (start, end, callback) {
+		$.ajax({
+			url: base_url + 'admin/dashboard/get_unpaid',
+			type: 'POST',
+			dataType: 'json',
+			data: {
+				start: moment(start).format('YYYY-MM-DD HH:mm'),
+				end: moment(end).format('YYYY-MM-DD HH:mm')
+			},
+			success: function(response) {
+				callback(response.items);
+			}
+		});
+	},
+
+	eventRender: function(event, element, view) {
+		(event.allDay) ? event.allDay = true : event.allDay = false;
+		element.bind('dblclick', function() {
+			alert('double click!' + event.id);
+		});
+	},
+
+	selectable: true,
+		selectHelper: true,
+	select: function(start, end, allDay) {
+		var title = prompt('Event Title:');
+	},
+
+	editable: true,
+	eventDrop: function(event, delta){
+		alert('eventDrop');
+	},
+
+	eventClick: function(event) {
+		var decision = confirm("Do you really want to do that?"); 
+	},
+
+	eventResize: function(event) {
+		alert('eventResize');
+	}
+});

@@ -3,33 +3,50 @@ $(function () {
     var $table = $('#price');
     var $modal = $('#my_modal');
 
+    $('li.settings').addClass('opened active').find('ul').addClass('visible').find('li.prices').addClass('active');
+
     $table.DataTable({
         LengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
         autoWidth: false,
-        responsive: true,
+        responsive: false,
         processing: true,
         serverSide: true,
+        info:     false,
+        bLengthChange: false,
+        ordering: false,
+        fnInitComplete: function(){
+            $('.dataTables_filter').append($('#add').clone());
+         },
         ajax: {
-            url: base_url + 'price/all',
+            url: base_url + 'admin/price/all',
             type: 'POST'
         },
         columns: [
-            {data: 'id'},
+            {data: 'id',visible:false},
+            {data: 'actions',  width: '1%', orderable: false, searchable: false},
             {data: 'price'},
-            {data: 'description'},
-            {data: 'actions'}
+            {data: 'description'}
         ],
         order: [[ 0, "desc" ]]
     });
+
 
     $table.closest('.dataTables_wrapper').find('select').select2({
         minimumResultsForSearch: -1
     });
 
+    $modal.on('show.bs.modal', function() {
+        $(this).find('input.icheck').iCheck({
+            checkboxClass: 'icheckbox_square-blue'
+        });
+    });
+
     $table.on('click', '.remove', function(e) {
         e.preventDefault();
         var url = $(this).attr('href');
-        if (confirm("Are you sure?")) {
+        $('#confirmation').modal('show').on('click', '.btn-ok', function(event) {
+            event.preventDefault();
+            $('#confirmation').modal('hide');
             $.ajax({
                 url: url,
                 type: 'POST',
@@ -38,7 +55,7 @@ $(function () {
                     (response.status == '1') ? $table.DataTable().ajax.reload() : '';
                 }
             });
-        }
+        });
     });
     
     $table.on('click', '.edit', function(e) {

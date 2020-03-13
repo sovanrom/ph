@@ -10,7 +10,7 @@ class Price_model extends MY_Model {
 		parent::__construct();
 	}
 
-	public function all()
+	public function all($user = '')
 	{
 		$this->load->library('datatables');
 		$this->datatables->select('id')
@@ -19,16 +19,15 @@ class Price_model extends MY_Model {
 		->from($this->table)
 		->where('status', 1);
 
-		$edit = "<a href='" . base_url('price/edit/$1') . "' class='edit' title='edit'><i class='entypo-pencil'></i></a>";
-		$delete = "<a href='" . base_url('price/delete/$1') . "' class='remove' title='delete'><i class='entypo-trash'></i></a>";
-		$actions = $edit . $delete;
+		($user != '') ? $this->datatables->where('created_by', $user) : '' ;
+
+		$edit = "<a href='" . base_url('admin/price/edit/$1') . "' class='edit' title='edit'><i class='entypo-pencil'></i></a>";
+		$actions = $edit;
 
 		$this->datatables->add_column(
 			"actions",
 			"<div class='text-center'>
-				<div class='btn-group'>
-					".$actions."
-				</div>
+				<div class='btn-group'>$actions</div>
 			</div>",
 			"id"
 		);

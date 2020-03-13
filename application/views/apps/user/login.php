@@ -99,8 +99,5 @@
 	<!-- JavaScripts initializations and stuff -->
 	<script src="<?php echo base_url(); ?>assets/neon/js/neon-custom.js"></script>
 
-	<!-- Demo Settings -->
-	<script src="<?php echo base_url(); ?>assets/neon/js/neon-demo.js"></script>
-
 </body>
 </html>

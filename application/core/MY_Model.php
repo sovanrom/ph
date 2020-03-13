@@ -36,11 +36,22 @@ class MY_Model extends CI_Model {
         return $this->db->delete($this->table);
     }
     
-    public function select_option($column = array(), $order_by = 'id', $type = 'asc'){
-        $this->db->select($column);
-        $this->db->from($this->table);
-        $this->db->where('status',1);
-        $this->db->order_by($order_by, $type);
+    public function select($table, $column = 'name', $order_by = 'id', $type = 'asc'){
+        $this->db->select('id')
+            ->select($column)
+            ->from($table)
+            ->where('status',1)
+            ->order_by($order_by, $type);
+        return $this->db->get()->result();
+    }
+
+    public function select2($search = '', $column = 'name'){
+        $this->db->select('id')
+            ->select($column . ' as text')
+            ->from($this->table)
+            ->like($column, $search, 'both')
+            ->where('status', 1)
+            ->limit(15);
         return $this->db->get()->result();
     }
 

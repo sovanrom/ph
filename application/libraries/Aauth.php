@@ -29,6 +29,7 @@ class Aauth {
 		$this->precache_perms();
 		$this->precache_groups();
 	}
+
 	
 	private function precache_perms() {
 		$query	= $this->aauth_db->get($this->config_vars['perms']);
@@ -89,9 +90,9 @@ class Aauth {
  		}
 
 		$query = null;
-		$query = $this->aauth_db->where($db_identifier, $identifier);
-		$query = $this->aauth_db->where('banned', 1);
-		$query = $this->aauth_db->where('verification_code !=', '');
+		$this->aauth_db->where($db_identifier, $identifier);
+		$this->aauth_db->where('banned', 1);
+		$this->aauth_db->where('verification_code !=', '');
 		$query = $this->aauth_db->get($this->config_vars['users']);
 
 		if ($query->num_rows() > 0) {
@@ -99,7 +100,7 @@ class Aauth {
 			return false;
 		}
 
-		$query = $this->aauth_db->where($db_identifier, $identifier);
+		$this->aauth_db->where($db_identifier, $identifier);
 		$query = $this->aauth_db->get($this->config_vars['users']);
 
 		if($query->num_rows() == 0){
@@ -112,7 +113,7 @@ class Aauth {
 			}
 
 			$query = null;
-			$query = $this->aauth_db->where($db_identifier, $identifier);
+			$this->aauth_db->where($db_identifier, $identifier);
 			$query = $this->aauth_db->get($this->config_vars['users']);
 			$totp_secret =  $query->row()->totp_secret;
 			if ($query->num_rows() > 0 AND !$totp_code) {
@@ -133,7 +134,7 @@ class Aauth {
 
 	 	if($this->config_vars['totp_active'] == true AND $this->config_vars['totp_only_on_ip_change'] == true){
 			$query = null;
-			$query = $this->aauth_db->where($db_identifier, $identifier);
+			$this->aauth_db->where($db_identifier, $identifier);
 			$query = $this->aauth_db->get($this->config_vars['users']);
 			$totp_secret =  $query->row()->totp_secret;
 			$ip_address = $query->row()->ip_address;
@@ -164,8 +165,8 @@ class Aauth {
 	 	}
 
 		$query = null;
-		$query = $this->aauth_db->where($db_identifier, $identifier);
-		$query = $this->aauth_db->where('banned', 0);
+		$this->aauth_db->where($db_identifier, $identifier);
+		$this->aauth_db->where('banned', 0);
 		$query = $this->aauth_db->get($this->config_vars['users']);
 		$row = $query->row();
 		$password = ($this->config_vars['use_password_hash'] ? $pass : $this->hash_password($pass, $row->id));
@@ -175,6 +176,7 @@ class Aauth {
 				'id' => $row->id,
 				'username' => $row->username,
 				'email' => $row->email,
+                'group_id' => $row->group_id,
 				'loggedin' => true
 			);
 
@@ -221,8 +223,8 @@ class Aauth {
 				$cookie = explode('-', $this->CI->input->cookie('user', true));
 				if(!is_numeric( $cookie[0] ) OR strlen($cookie[1]) < 13 ){return false;}
 				else{
-					$query = $this->aauth_db->where('id', $cookie[0]);
-					$query = $this->aauth_db->where('remember_exp', $cookie[1]);
+					$this->aauth_db->where('id', $cookie[0]);
+					$this->aauth_db->where('remember_exp', $cookie[1]);
 					$query = $this->aauth_db->get($this->config_vars['users']);
 
 					$row = $query->row();
@@ -244,7 +246,6 @@ class Aauth {
 				}
 			}
 		}
-		return false;
 	}
 
 	public function control( $perm_par = false ){
